@@ -5,6 +5,7 @@ import time
 from  machine import Pin
 import json
 import os
+from web import Web
 
 # Load Setting
 settings = Settings()
@@ -61,7 +62,9 @@ for x in range(0, 10):
     led.off()
 
 
+web = Web(quiet=False)
 
+print(web.sendToLogger({"temp":34}))
 
 
 

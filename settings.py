@@ -18,8 +18,11 @@ class Settings:
     def getPASSWORD(self):
         return self._settings.get("PASSWORD","")
 
-    def getHOST(self):
-        return self._settings.get("HOST","")
+    def getLOGGERHOST(self):
+        return self._settings.get("LOGGERHOST","")
+
+    def getLOGGERPORT(self):
+        return self._settings.get("LOGGERPORT",80)
 
     def getNTP(self):
         return self._settings.get("NTP","")
