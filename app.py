@@ -2,10 +2,14 @@ from settings import Settings
 import network
 import ntptime
 import time
-from  machine import Pin
+from  machine import Pin 
+import machine
 import json
 import os
 from web import Web
+
+import micropython
+import bme280
 
 # Load Setting
 settings = Settings()
@@ -64,7 +68,24 @@ for x in range(0, 10):
 
 web = Web(quiet=False)
 
-print(web.sendToLogger({"temp":34}))
+while True:
+    # Get climate 
+    i2c = machine.I2C(1, scl=machine.Pin(27), sda=machine.Pin(26))
+    bme=bme280.BME280(i2c=i2c)
+    t,p,h=bme.read_compensated_data()
+    centigrade=t/100
+    p /=25600
+    h /= 1024
+    # print("Temperature:" + str(centigrade) + "C  Pressure:" + str(p) + "hPa Humidity:" + str(h) +  "% Pressure:" + str(p/33.86) + "inHg")
+    iotData = {}
+    iotData["celsius"] = centigrade
+    #  Note: inMg = pi/33.86
+    iotData["hPa"] = p
+    iotData["humidity"] = h
+    # Save data to the logger
+    print(web.sendToLogger(iotData))
+
+    time.sleep(settings.getSECONDS())
 
 
 
