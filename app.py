@@ -11,12 +11,11 @@ from web import Web
 import micropython
 import bme280
 
+# Set up quiet mode
+_quiet = False
+
 # Load Setting
 settings = Settings()
-
-
-
-
 
 # Set up LED
 led = Pin("LED", Pin.OUT)
@@ -66,26 +65,31 @@ for x in range(0, 10):
     led.off()
 
 
-web = Web(quiet=False)
+web = Web(quiet=_quiet)
+i2c = machine.I2C(1, scl=machine.Pin(27), sda=machine.Pin(26))
+bme=bme280.BME280(i2c=i2c)
 
 while True:
-    # Get climate 
-    i2c = machine.I2C(1, scl=machine.Pin(27), sda=machine.Pin(26))
-    bme=bme280.BME280(i2c=i2c)
-    t,p,h=bme.read_compensated_data()
-    centigrade=t/100
-    p /=25600
-    h /= 1024
-    # print("Temperature:" + str(centigrade) + "C  Pressure:" + str(p) + "hPa Humidity:" + str(h) +  "% Pressure:" + str(p/33.86) + "inHg")
-    iotData = {}
-    iotData["celsius"] = centigrade
-    #  Note: inMg = pi/33.86
-    iotData["hPa"] = p
-    iotData["humidity"] = h
-    # Save data to the logger
-    print(web.sendToLogger(iotData))
-
-    time.sleep(settings.getSECONDS())
+    # Get climate data from the bme280 sensor
+    try:
+        t,p,h=bme.read_compensated_data()
+        centigrade=t/100
+        p /=25600
+        h /= 1024
+        iotData = {}
+        iotData["celsius"] = centigrade
+        #  Note: inMg = pi/33.86
+        iotData["hPa"] = p
+        iotData["humidity"] = h
+        # Send data to the logger
+        result = web.sendToLogger(iotData)
+        not _quiet and print("Result:",result, " at ",str(time.localtime()) )
+        time.sleep(settings.getSECONDS())
+    except Exception as error:
+        # handle the exception
+        print("An exception occurred:", error)
+        time.sleep(300)
+    
 
 
 
