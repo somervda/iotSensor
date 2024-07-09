@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import json
 
 class Settings:
@@ -28,7 +29,7 @@ class Settings:
         return self._settings.get("NTP","")
 
     def getSECONDS(self):
-        return self._settings.get("SECONDS","37007")
+        return self._settings.get("SECONDS","60")
 
     def getUSER(self):
         return self._settings.get("USER","")

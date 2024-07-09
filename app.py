@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 from settings import Settings
 import network
 import ntptime
@@ -9,13 +10,24 @@ import os
 from web import Web
 
 import micropython
-import bme280
+
+from sensor import Sensor
+
+def dir_exists(dirName):
+    try:
+        return (os.stat(dirName)[0] & 0x4000) != 0
+    except OSError:
+        return False
+
 
 # Set up quiet mode
 _quiet = False
 
 # Load Setting
 settings = Settings()
+
+# Network Error Counter
+network_error_count = 0
 
 # Set up LED
 led = Pin("LED", Pin.OUT)
@@ -43,15 +55,15 @@ print("Connected! ifconfig:",wlan.ifconfig()[0],wlan.ifconfig()[1],wlan.ifconfig
 # Short delay before getting ntp time
 # There is a known timing bug with this so try again
 # if it fails.
-# try:
-ntptime.host = settings.getNTP()
-print(ntptime.host)
-ntptime.timeout = 2
-ntptime.settime()
-# except:
-#     print("ntptime error! Rebooting...")
-#     time.sleep(1)
-#     machine.reset()
+try:
+    ntptime.host = settings.getNTP()
+    print(ntptime.host)
+    ntptime.timeout = 2
+    ntptime.settime()
+except:
+    print("ntptime error! Rebooting...")
+    time.sleep(1)
+    machine.reset()
 
 
 
@@ -64,31 +76,40 @@ for x in range(0, 10):
 
     led.off()
 
-
+if not dir_exists("data"):
+    os.mkdir("data")
 web = Web(quiet=_quiet)
-i2c = machine.I2C(1, scl=machine.Pin(27), sda=machine.Pin(26))
-bme=bme280.BME280(i2c=i2c)
+sensor = Sensor(quiet=_quiet)
+
 
 while True:
-    # Get climate data from the bme280 sensor
-    try:
-        t,p,h=bme.read_compensated_data()
-        centigrade=t/100
-        p /=25600
-        h /= 1024
-        iotData = {}
-        iotData["celsius"] = centigrade
-        #  Note: inMg = pi/33.86
-        iotData["hPa"] = p
-        iotData["humidity"] = h
-        # Send data to the logger
-        result = web.sendToLogger(iotData)
-        not _quiet and print("Result:",result, " at ",str(time.localtime()) )
-        time.sleep(settings.getSECONDS())
-    except Exception as error:
-        # handle the exception
-        print("An exception occurred:", error)
-        time.sleep(300)
+    # Main event loop. Check if it is time to collect sensor data
+    # and check if there is sensor data waiting to be written to
+    # the iotCache service
+
+    not _quiet and print(sensor.getData())
+    # If a sensorData file is present then send it the iotCache service
+    for fileName in os.listdir("data"):
+        with open("data/" + fileName, "r") as iotDataFile:
+            not _quiet and print("Sending ",fileName," to iotCache...")
+            iotData = json.load(iotDataFile)
+            result = web.sendToCacheServer(iotData)
+            os.remove("data/" + fileName)
+            # Only process one file per event loop
+            break
+    # not _quiet and print("Result:",result, " at ",str(time.localtime()) )
+    # network_error_count = 0 # Reset network error count
+    # except Exception as error:
+    #     # handle the exception
+    #     # Will try and send the data 5 times (10 seconds )
+    #     print("An exception occurred:", error)
+    #     network_error_count += 1
+    #     if network_error_count > 5:
+    #         # Try restarting with a new network connection
+    #         machine.reset()
+    #     else:
+    #         time.sleep(10)
+    time.sleep(5)
     
 
 
