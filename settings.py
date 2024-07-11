@@ -42,3 +42,9 @@ class Settings:
 
     def getHOSTNAME(self):
         return self._settings.get("HOSTNAME","")
+
+    def getTEMPADJ(self):
+        return self._settings.get("TEMPADJ",0)
+
+    def getHUMIDADJ(self):
+        return self._settings.get("HUMIDADJ",0)

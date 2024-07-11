@@ -35,8 +35,10 @@ class Sensor:
             # get the sensor data (Replay with your particular data collection)
             t,p,h=self._bme.read_compensated_data()
             centigrade=t/100
+            centigrade+= self._settings.getTEMPADJ()
             p /=25600
             h /= 1024
+            h+= self._settings.getHUMIDADJ()
             iotData = {}
             iotData["celsius"] = centigrade
             #  Note: inMg = pi/33.86
