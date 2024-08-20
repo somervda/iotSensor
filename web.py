@@ -60,21 +60,3 @@ class Web:
                 not self._quiet  and print("Retry count exceeded - restarting...")
                 time.sleep(1)
                 machine.reset()
-
-
-
-    # def sendToLogger2(self,values={}):
-    #     not self._quiet and print("sendToLogger2",values)
-    #     addr = socket.getaddrinfo(self._settings.getLOGGERHOST(), self._settings.getLOGGERPORT())[0][-1]
-    #     not self._quiet and print("ADDR:",addr)
-    #     s = socket.socket()
-    #     s.connect(addr)
-    #     s.send(bytes('GET /%s HTTP/1.0\r\nHost: %s\r\n\r\n' % ("hello", self._settings.getLOGGERHOST() + ":" + str(self._settings.getLOGGERPORT())), 'utf8'))
-    #     while True:
-    #         data = s.recv(100)
-    #         if data:
-    #             print(str(data, 'utf8'), end='')
-    #         else:
-    #             break
-    #     s.close()
-    #     return ""

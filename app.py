@@ -97,18 +97,6 @@ while True:
             os.remove("data/" + fileName)
             # Only process one file per event loop
             break
-    # not _quiet and print("Result:",result, " at ",str(time.localtime()) )
-    # network_error_count = 0 # Reset network error count
-    # except Exception as error:
-    #     # handle the exception
-    #     # Will try and send the data 5 times (10 seconds )
-    #     print("An exception occurred:", error)
-    #     network_error_count += 1
-    #     if network_error_count > 5:
-    #         # Try restarting with a new network connection
-    #         machine.reset()
-    #     else:
-    #         time.sleep(10)
     time.sleep(5)
     
 
