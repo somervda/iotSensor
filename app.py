@@ -99,9 +99,5 @@ while True:
                 # Only process one file per event loop
                 break
     except Exception as error:
-        not _quiet and print(time, ": an exception occurred:", error)
+        not _quiet and print("An exception occurred:", error, " Time:",time.localtime())
     time.sleep(5)
-    
-
-
-
