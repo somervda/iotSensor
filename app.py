@@ -83,20 +83,23 @@ sensor = Sensor(quiet=_quiet)
 
 
 while True:
-    # Main event loop. Check if it is time to collect sensor data
-    # and check if there is sensor data waiting to be written to
-    # the iotCache service
-
-    not _quiet and print(sensor.getData())
-    # If a sensorData file is present then send it the iotCache service
-    for fileName in os.listdir("data"):
-        with open("data/" + fileName, "r") as iotDataFile:
-            not _quiet and print("Sending ",fileName," to iotCache...")
-            iotData = json.load(iotDataFile)
-            result = web.sendToCacheServer(iotData)
-            os.remove("data/" + fileName)
-            # Only process one file per event loop
-            break
+    try:
+        # Main event loop. Check if it is time to collect sensor data
+        # and check if there is sensor data waiting to be written to
+        # the iotCache service
+        getdataResult = sensor.getData()
+        not _quiet and print(getdataResult)
+        # If a sensorData file is present then send it the iotCache service
+        for fileName in os.listdir("data"):
+            with open("data/" + fileName, "r") as iotDataFile:
+                not _quiet and print("Sending ",fileName," to iotCache...")
+                iotData = json.load(iotDataFile)
+                result = web.sendToCacheServer(iotData)
+                os.remove("data/" + fileName)
+                # Only process one file per event loop
+                break
+    except Exception as error:
+        print(time, ": an exception occurred:", error)
     time.sleep(5)
     
 
